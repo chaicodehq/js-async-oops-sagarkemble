@@ -72,16 +72,58 @@
  *   isLassiStand({});                       // => false
  */
 export function LassiStand(name, city) {
-  // Your code here
+  this.name = name;
+  this.city = city;
+  this.menu = [];
+  this.orders = [];
+  this._nextOrderId = 1;
 }
 
 // Add prototype methods here:
-// LassiStand.prototype.addFlavor = function(flavor, price) { ... }
-// LassiStand.prototype.takeOrder = function(customerName, flavor, quantity) { ... }
-// LassiStand.prototype.completeOrder = function(orderId) { ... }
-// LassiStand.prototype.getRevenue = function() { ... }
-// LassiStand.prototype.getMenu = function() { ... }
+LassiStand.prototype.addFlavor = function (flavor, price) {
+  const isExists = this.menu.some((e) => e.flavor === flavor);
+
+  if (isExists || price <= 0) return -1;
+  this.menu.push({ flavor, price });
+  return this.menu.length;
+};
+LassiStand.prototype.takeOrder = function (customerName, flavor, quantity) {
+  const item = this.menu.find((e) => e.flavor === flavor);
+  if (!item || quantity <= 0) return -1;
+  const total = item.price * quantity;
+  const order = {
+    id: this._nextOrderId++,
+    customer: customerName,
+    flavor,
+    quantity,
+    total,
+    status: "pending",
+  };
+  this.orders.push(order);
+  return order.id;
+};
+LassiStand.prototype.completeOrder = function (orderId) {
+  if (!orderId || orderId <= 0) return false;
+  const orderIndex = this.orders.findIndex((e) => e.id === orderId);
+  if (orderIndex === -1) return false;
+  if (
+    !this.orders[orderIndex] ||
+    this.orders[orderIndex].status === "completed"
+  ) {
+    return false;
+  }
+  this.orders[orderIndex].status = "completed";
+  return true;
+};
+LassiStand.prototype.getRevenue = function (order) {
+  const completedOrders = this.orders.filter((e) => e.status === "completed");
+  const total = completedOrders.reduce((a, e) => a + e.total, 0);
+  return total;
+};
+LassiStand.prototype.getMenu = function () {
+  return structuredClone(this.menu);
+};
 
 export function isLassiStand(obj) {
-  // Your code here
+  return obj instanceof LassiStand;
 }
